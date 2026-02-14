@@ -1,0 +1,105 @@
+import type { Transaction, Appointment } from './types';
+
+export const transactions: Transaction[] = [
+  {
+    id: "txn_1",
+    date: new Date(2023, 10, 5).toISOString(),
+    type: "income",
+    category: "Client Project",
+    description: "Web design for 'Creative Solutions'",
+    amount: 2500,
+  },
+  {
+    id: "txn_2",
+    date: new Date(2023, 10, 8).toISOString(),
+    type: "expense",
+    category: "Software",
+    description: "Figma Subscription",
+    amount: 15,
+  },
+  {
+    id: "txn_3",
+    date: new Date(2023, 11, 15).toISOString(),
+    type: "income",
+    category: "Client Project",
+    description: "Logo design for 'Startup Inc'",
+    amount: 800,
+  },
+  {
+    id: "txn_4",
+    date: new Date(2023, 11, 20).toISOString(),
+    type: "expense",
+    category: "Utilities",
+    description: "Monthly Internet Bill",
+    amount: 60,
+  },
+  {
+    id: "txn_5",
+    date: new Date(2024, 0, 10).toISOString(),
+    type: "income",
+    category: "Consulting",
+    description: "Marketing strategy session",
+    amount: 500,
+  },
+  {
+    id: "txn_6",
+    date: new Date(2024, 0, 12).toISOString(),
+    type: "expense",
+    category: "Office Supplies",
+    description: "Notebooks and pens",
+    amount: 45,
+  },
+  {
+    id: "txn_7",
+    date: new Date(2024, 1, 1).toISOString(),
+    type: "income",
+    category: "Client Project",
+    description: "Backend dev for 'Tech Innovators'",
+    amount: 4200,
+  },
+  {
+    id: "txn_8",
+    date: new Date(2024, 1, 5).toISOString(),
+    type: "expense",
+    category: "Rent",
+    description: "Co-working space fee",
+    amount: 250,
+  },
+  {
+    id: "txn_9",
+    date: new Date(2024, 2, 18).toISOString(),
+    type: "income",
+    category: "Maintenance",
+    description: "Website update for 'Creative Solutions'",
+    amount: 350,
+  },
+  {
+    id: "txn_10",
+    date: new Date(2024, 2, 22).toISOString(),
+    type: "expense",
+    category: "Marketing",
+    description: "Social media ads",
+    amount: 150,
+  },
+];
+
+export const appointments: Appointment[] = [
+    {
+        id: "apt_1",
+        date: new Date(new Date().setDate(new Date().getDate() + 2)),
+        title: "Project Kickoff with Startup Inc.",
+        description: "Initial meeting to discuss project scope and deliverables.",
+    },
+    {
+        id: "apt_2",
+        date: new Date(new Date().setDate(new Date().getDate() + 5)),
+        title: "Design Review with Creative Solutions",
+        description: "Review of the latest design mockups.",
+    },
+    {
+        id: "apt_3",
+        date: new Date(new Date().setDate(new Date().getDate() - 3)),
+        title: "Dentist Appointment",
+        description: "Annual check-up.",
+    },
+];
