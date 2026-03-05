@@ -42,23 +42,60 @@
         "date": { "type": "string", "format": "date-time" }
       },
       "required": ["customerId", "type", "content", "date"]
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "A company team member.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "department": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "status": { "type": "string", "enum": ["Active", "Onboarding", "On Leave", "Terminated"] },
+        "joinDate": { "type": "string", "format": "date" }
+      },
+      "required": ["name", "role", "email", "status"]
+    },
+    "LeaveRequest": {
+      "title": "Leave Request",
+      "description": "An employee time-off request.",
+      "type": "object",
+      "properties": {
+        "employeeId": { "type": "string" },
+        "employeeName": { "type": "string" },
+        "type": { "type": "string", "enum": ["Annual", "Sick", "Maternity", "Unpaid"] },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
+        "reason": { "type": "string" }
+      },
+      "required": ["employeeId", "type", "startDate", "endDate", "status"]
+    },
+    "HRQuery": {
+      "title": "HR Query",
+      "description": "An internal helpdesk ticket.",
+      "type": "object",
+      "properties": {
+        "employeeName": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["Open", "In Progress", "Resolved"] },
+        "priority": { "type": "string", "enum": ["Low", "Medium", "High"] },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["employeeName", "subject", "message", "status", "priority"]
     }
   },
   "auth": {
     "providers": ["google.com"]
   },
   "firestore": {
-    "/customers/{customerId}": {
-      "schema": "Customer",
-      "description": "Collection of business customers."
-    },
-    "/leads/{leadId}": {
-      "schema": "Lead",
-      "description": "Sales pipeline leads and deals."
-    },
-    "/interactions/{interactionId}": {
-      "schema": "Interaction",
-      "description": "History of client interactions."
-    }
+    "/customers/{customerId}": { "schema": "Customer", "description": "Business customers." },
+    "/leads/{leadId}": { "schema": "Lead", "description": "Sales deals." },
+    "/interactions/{interactionId}": { "schema": "Interaction", "description": "Client interaction logs." },
+    "/employees/{employeeId}": { "schema": "Employee", "description": "Staff members." },
+    "/leaveRequests/{requestId}": { "schema": "LeaveRequest", "description": "Time-off requests." },
+    "/hrQueries/{queryId}": { "schema": "HRQuery", "description": "Helpdesk tickets." }
   }
 }

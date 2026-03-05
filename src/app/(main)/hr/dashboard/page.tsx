@@ -1,4 +1,8 @@
-import { employees, leaveRequests, hrQueries } from '@/lib/data';
+
+"use client"
+
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,15 +12,29 @@ import {
   CalendarClock, 
   AlertCircle, 
   Plus,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function HRDashboardPage() {
+  const db = useFirestore();
+  const { data: employees = [], loading: loadingEmp } = useCollection(db ? collection(db, 'employees') : null);
+  const { data: leaveRequests = [], loading: loadingLeave } = useCollection(db ? collection(db, 'leaveRequests') : null);
+  const { data: hrQueries = [], loading: loadingQueries } = useCollection(db ? collection(db, 'hrQueries') : null);
+
   const activeEmployees = employees.filter(e => e.status === 'Active').length;
   const onboarding = employees.filter(e => e.status === 'Onboarding').length;
   const pendingLeave = leaveRequests.filter(l => l.status === 'Pending').length;
   const openQueries = hrQueries.filter(q => q.status === 'Open').length;
+
+  if (loadingEmp || loadingLeave || loadingQueries) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -92,7 +110,10 @@ export default function HRDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {leaveRequests.map(leave => (
+              {leaveRequests.length === 0 && onboarding === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-6">No recent activity logged.</p>
+              )}
+              {leaveRequests.slice(0, 3).map(leave => (
                 <div key={leave.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
                   <div className="space-y-1">
                     <p className="text-sm font-medium">{leave.employeeName} requested {leave.type} leave</p>
@@ -133,12 +154,7 @@ export default function HRDashboardPage() {
             </Button>
             <Button variant="outline" className="justify-between" asChild>
               <Link href="/hr/performance">
-                Schedule Performance Review <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button variant="outline" className="justify-between" asChild>
-              <Link href="/hr/training">
-                Assign Training Module <ArrowRight className="h-4 w-4" />
+                Performance Ratings <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </CardContent>

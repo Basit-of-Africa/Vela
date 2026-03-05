@@ -1,16 +1,20 @@
+
 "use client"
 
-import { useState } from 'react';
-import { leaveRequests as initialRequests } from '@/lib/data';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, doc, updateDoc } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { PlaneLanding, CheckCircle2, XCircle } from 'lucide-react';
+import { PlaneLanding, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function LeavePage() {
-  const [requests, setRequests] = useState(initialRequests);
+  const db = useFirestore();
+  const { data: requests = [], loading } = useCollection(db ? collection(db, 'leaveRequests') : null);
   const { toast } = useToast();
 
   const getStatusVariant = (status: string) => {
@@ -23,13 +27,22 @@ export default function LeavePage() {
   };
 
   const handleStatusUpdate = (id: string, newStatus: 'Approved' | 'Rejected') => {
-    setRequests(prev => prev.map(req => 
-      req.id === id ? { ...req, status: newStatus } : req
-    ));
-    toast({
-      title: `Request ${newStatus}`,
-      description: `The leave request has been successfully updated to ${newStatus}.`,
-    });
+    if (!db) return;
+    const docRef = doc(db, 'leaveRequests', id);
+    updateDoc(docRef, { status: newStatus })
+      .then(() => {
+        toast({
+          title: `Request ${newStatus}`,
+          description: `The leave request has been updated.`,
+        });
+      })
+      .catch(async () => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: { status: newStatus }
+        }));
+      });
   };
 
   return (
@@ -39,7 +52,7 @@ export default function LeavePage() {
           <h1 className="font-headline text-3xl font-bold tracking-tight">Leave Requests</h1>
           <p className="text-muted-foreground">Manage and approve employee time-off requests.</p>
         </div>
-        <Button onClick={() => toast({ title: "Feature coming soon", description: "Manual request entry is currently being developed." })}>
+        <Button onClick={() => toast({ title: "Note", description: "Use the employee profile to submit new requests." })}>
           <PlaneLanding className="mr-2 h-4 w-4" /> New Request
         </Button>
       </header>
@@ -50,66 +63,76 @@ export default function LeavePage() {
           <CardDescription>View all recent absence requests from the team.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Period</TableHead>
-                  <TableHead>Reason</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {requests.map((request) => (
-                  <TableRow key={request.id}>
-                    <TableCell className="font-medium">{request.employeeName}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{request.type}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {request.startDate} <br />
-                        <span className="text-xs text-muted-foreground">to {request.endDate}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="max-w-[200px] truncate" title={request.reason}>
-                      {request.reason}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusVariant(request.status)}>
-                        {request.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {request.status === 'Pending' && (
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
-                            className="h-8 w-8 text-green-600 hover:bg-green-50"
-                            onClick={() => handleStatusUpdate(request.id, 'Approved')}
-                          >
-                            <CheckCircle2 className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                            onClick={() => handleStatusUpdate(request.id, 'Rejected')}
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Employee</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Period</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {requests.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                        No leave requests found.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    requests.map((request) => (
+                      <TableRow key={request.id}>
+                        <TableCell className="font-medium">{request.employeeName}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{request.type}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {request.startDate} <br />
+                            <span className="text-xs text-muted-foreground">to {request.endDate}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getStatusVariant(request.status)}>
+                            {request.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {request.status === 'Pending' && (
+                            <div className="flex justify-end gap-2">
+                              <Button 
+                                size="icon" 
+                                variant="ghost" 
+                                className="h-8 w-8 text-green-600 hover:bg-green-50"
+                                onClick={() => handleStatusUpdate(request.id, 'Approved')}
+                              >
+                                <CheckCircle2 className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                size="icon" 
+                                variant="ghost" 
+                                className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                onClick={() => handleStatusUpdate(request.id, 'Rejected')}
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
