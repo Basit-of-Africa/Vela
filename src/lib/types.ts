@@ -77,3 +77,34 @@ export type TrainingModule = {
     correctAnswer: number;
   }[];
 };
+
+// CRM Types
+export type Customer = {
+  id: string;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  status: 'Active' | 'Lead' | 'Inactive';
+  lastContact: string;
+  totalValue: number;
+};
+
+export type Lead = {
+  id: string;
+  title: string;
+  customerName: string;
+  value: number;
+  stage: 'Discovery' | 'Proposal' | 'Negotiation' | 'Closed Won' | 'Closed Lost';
+  probability: number;
+  createdAt: string;
+};
+
+export type Interaction = {
+  id: string;
+  customerId: string;
+  customerName: string;
+  type: 'Call' | 'Email' | 'Meeting' | 'Note';
+  content: string;
+  date: string;
+};

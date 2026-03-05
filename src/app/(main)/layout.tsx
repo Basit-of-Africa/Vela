@@ -33,7 +33,11 @@ import {
   Star,
   MessageSquare,
   GraduationCap,
-  Briefcase
+  Briefcase,
+  Contact,
+  TrendingUp,
+  CircleDollarSign,
+  History
 } from "lucide-react"
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -44,6 +48,12 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     { href: "/transactions", icon: <ArrowLeftRight className="h-4 w-4" />, label: "Transactions" },
     { href: "/schedule", icon: <Calendar className="h-4 w-4" />, label: "Schedule" },
     { href: "/predictive-insights", icon: <BrainCircuit className="h-4 w-4" />, label: "Insights" },
+  ]
+
+  const crmNav = [
+    { href: "/crm/dashboard", icon: <CircleDollarSign className="h-4 w-4" />, label: "CRM Overview" },
+    { href: "/crm/customers", icon: <Contact className="h-4 w-4" />, label: "Customers" },
+    { href: "/crm/pipeline", icon: <TrendingUp className="h-4 w-4" />, label: "Sales Pipeline" },
   ]
 
   const hrNav = [
@@ -69,7 +79,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>General</SidebarGroupLabel>
+            <SidebarGroupLabel>Operations</SidebarGroupLabel>
             <SidebarMenu>
               {mainNav.map((item) => (
                 <SidebarMenuItem key={item.href}>
@@ -89,7 +99,27 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </SidebarGroup>
 
           <SidebarGroup>
-            <SidebarGroupLabel>HR Management</SidebarGroupLabel>
+            <SidebarGroupLabel>Sales & CRM</SidebarGroupLabel>
+            <SidebarMenu>
+              {crmNav.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.href}
+                    tooltip={item.label}
+                  >
+                    <Link href={item.href}>
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel>Team Management</SidebarGroupLabel>
             <SidebarMenu>
               {hrNav.map((item) => (
                 <SidebarMenuItem key={item.href}>
