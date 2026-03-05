@@ -1,11 +1,18 @@
-import { leaveRequests } from '@/lib/data';
+"use client"
+
+import { useState } from 'react';
+import { leaveRequests as initialRequests } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PlaneLanding, CheckCircle2, XCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LeavePage() {
+  const [requests, setRequests] = useState(initialRequests);
+  const { toast } = useToast();
+
   const getStatusVariant = (status: string) => {
     switch (status) {
       case 'Approved': return 'default';
@@ -15,6 +22,16 @@ export default function LeavePage() {
     }
   };
 
+  const handleStatusUpdate = (id: string, newStatus: 'Approved' | 'Rejected') => {
+    setRequests(prev => prev.map(req => 
+      req.id === id ? { ...req, status: newStatus } : req
+    ));
+    toast({
+      title: `Request ${newStatus}`,
+      description: `The leave request has been successfully updated to ${newStatus}.`,
+    });
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -22,7 +39,7 @@ export default function LeavePage() {
           <h1 className="font-headline text-3xl font-bold tracking-tight">Leave Requests</h1>
           <p className="text-muted-foreground">Manage and approve employee time-off requests.</p>
         </div>
-        <Button>
+        <Button onClick={() => toast({ title: "Feature coming soon", description: "Manual request entry is currently being developed." })}>
           <PlaneLanding className="mr-2 h-4 w-4" /> New Request
         </Button>
       </header>
@@ -46,7 +63,7 @@ export default function LeavePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {leaveRequests.map((request) => (
+                {requests.map((request) => (
                   <TableRow key={request.id}>
                     <TableCell className="font-medium">{request.employeeName}</TableCell>
                     <TableCell>
@@ -69,10 +86,20 @@ export default function LeavePage() {
                     <TableCell className="text-right">
                       {request.status === 'Pending' && (
                         <div className="flex justify-end gap-2">
-                          <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600">
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8 text-green-600 hover:bg-green-50"
+                            onClick={() => handleStatusUpdate(request.id, 'Approved')}
+                          >
                             <CheckCircle2 className="h-4 w-4" />
                           </Button>
-                          <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive">
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                            onClick={() => handleStatusUpdate(request.id, 'Rejected')}
+                          >
                             <XCircle className="h-4 w-4" />
                           </Button>
                         </div>
