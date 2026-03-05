@@ -1,4 +1,4 @@
-import type { Transaction, Appointment } from './types';
+import type { Transaction, Appointment, Employee, LeaveRequest, InductionTask, PerformanceReview, HRQuery, TrainingModule } from './types';
 
 export const transactions: Transaction[] = [
   {
@@ -102,4 +102,55 @@ export const appointments: Appointment[] = [
         title: "Dentist Appointment",
         description: "Annual check-up.",
     },
+];
+
+export const employees: Employee[] = [
+  { id: 'emp_1', name: 'Alice Johnson', role: 'Senior Developer', department: 'Engineering', email: 'alice@bizhub.com', status: 'Active', joinDate: '2022-03-15' },
+  { id: 'emp_2', name: 'Bob Smith', role: 'Product Designer', department: 'Design', email: 'bob@bizhub.com', status: 'Active', joinDate: '2023-01-10' },
+  { id: 'emp_3', name: 'Charlie Davis', role: 'Marketing Lead', department: 'Marketing', email: 'charlie@bizhub.com', status: 'On Leave', joinDate: '2021-11-05' },
+  { id: 'emp_4', name: 'Diana Prince', role: 'Junior QA', department: 'Engineering', email: 'diana@bizhub.com', status: 'Onboarding', joinDate: '2024-05-20' },
+];
+
+export const leaveRequests: LeaveRequest[] = [
+  { id: 'lv_1', employeeId: 'emp_3', employeeName: 'Charlie Davis', type: 'Annual', startDate: '2024-06-01', endDate: '2024-06-15', status: 'Approved', reason: 'Summer vacation' },
+  { id: 'lv_2', employeeId: 'emp_2', employeeName: 'Bob Smith', type: 'Sick', startDate: '2024-05-15', endDate: '2024-05-16', status: 'Pending', reason: 'Flu symptoms' },
+];
+
+export const inductionTasks: InductionTask[] = [
+  { id: 'task_1', employeeId: 'emp_4', task: 'Sign employment contract', completed: true, dueDate: '2024-05-21' },
+  { id: 'task_2', employeeId: 'emp_4', task: 'Setup workstation', completed: false, dueDate: '2024-05-22' },
+  { id: 'task_3', employeeId: 'emp_4', task: 'Team introduction meeting', completed: false, dueDate: '2024-05-23' },
+];
+
+export const performanceReviews: PerformanceReview[] = [
+  { id: 'rev_1', employeeId: 'emp_1', employeeName: 'Alice Johnson', date: '2024-01-15', rating: 5, feedback: 'Outstanding performance and leadership.', reviewer: 'Jane Doe' },
+  { id: 'rev_2', employeeId: 'emp_2', employeeName: 'Bob Smith', date: '2024-02-10', rating: 4, feedback: 'Great design sense, needs to work on deadlines.', reviewer: 'Jane Doe' },
+];
+
+export const hrQueries: HRQuery[] = [
+  { id: 'q_1', employeeId: 'emp_1', employeeName: 'Alice Johnson', subject: 'Insurance Policy', message: 'I need details on the updated health insurance.', status: 'Open', priority: 'Medium', date: '2024-05-25' },
+];
+
+export const trainingModules: TrainingModule[] = [
+  {
+    id: 'tr_1',
+    title: 'Cybersecurity Awareness',
+    description: 'Learn the basics of staying safe online at work.',
+    duration: '45 mins',
+    category: 'Security',
+    questions: [
+      { question: 'What is phishing?', options: ['A sport', 'An email scam', 'A coding language'], correctAnswer: 1 },
+      { question: 'Should you reuse passwords?', options: ['Yes', 'No', 'Only for personal accounts'], correctAnswer: 1 }
+    ]
+  },
+  {
+    id: 'tr_2',
+    title: 'Workplace Ethics',
+    description: 'Understanding our code of conduct.',
+    duration: '30 mins',
+    category: 'Compliance',
+    questions: [
+      { question: 'Who is responsible for ethics?', options: ['Management', 'HR', 'Everyone'], correctAnswer: 2 }
+    ]
+  }
 ];
