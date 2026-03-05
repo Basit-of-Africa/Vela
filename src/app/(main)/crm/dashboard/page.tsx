@@ -1,4 +1,8 @@
-import { customers, leads, interactions } from '@/lib/data';
+
+"use client"
+
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,14 +13,20 @@ import {
   PhoneOutgoing, 
   UserPlus,
   ArrowUpRight,
-  History
+  History,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CRMDashboardPage() {
+  const db = useFirestore();
+  const { data: customers = [], loading: loadingCust } = useCollection(db ? collection(db, 'customers') : null);
+  const { data: leads = [], loading: loadingLeads } = useCollection(db ? collection(db, 'leads') : null);
+  const { data: interactions = [], loading: loadingInt } = useCollection(db ? collection(db, 'interactions') : null);
+
   const activeCustomers = customers.filter(c => c.status === 'Active').length;
-  const newLeads = leads.length;
-  const pipelineValue = leads.reduce((sum, l) => sum + l.value, 0);
+  const newLeads = leads.filter(l => l.stage !== 'Closed Won' && l.stage !== 'Closed Lost').length;
+  const pipelineValue = leads.reduce((sum, l) => sum + (l.value || 0), 0);
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -24,6 +34,14 @@ export default function CRMDashboardPage() {
       currency: 'USD',
     }).format(amount);
   };
+
+  if (loadingCust || loadingLeads || loadingInt) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -42,7 +60,7 @@ export default function CRMDashboardPage() {
           <Button asChild>
             <Link href="/crm/pipeline">
               <UserPlus className="mr-2 h-4 w-4" />
-              New Lead
+              Manage Pipeline
             </Link>
           </Button>
         </div>
@@ -56,7 +74,7 @@ export default function CRMDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeCustomers}</div>
-            <p className="text-xs text-muted-foreground">Key accounts growing</p>
+            <p className="text-xs text-muted-foreground">High-value accounts</p>
           </CardContent>
         </Card>
         <Card>
@@ -66,7 +84,7 @@ export default function CRMDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{newLeads}</div>
-            <p className="text-xs text-muted-foreground">Currently in pipeline</p>
+            <p className="text-xs text-muted-foreground">In active negotiation</p>
           </CardContent>
         </Card>
         <Card className="bg-primary/[0.03]">
@@ -76,7 +94,7 @@ export default function CRMDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">{formatCurrency(pipelineValue)}</div>
-            <p className="text-xs text-muted-foreground">Estimated potential revenue</p>
+            <p className="text-xs text-muted-foreground">Estimated revenue</p>
           </CardContent>
         </Card>
       </div>
@@ -94,33 +112,37 @@ export default function CRMDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {interactions.map(interaction => (
-                <div key={interaction.id} className="flex items-start gap-4 border-b pb-4 last:border-0 last:pb-0">
-                  <div className={`p-2 rounded-full ${
-                    interaction.type === 'Call' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'
-                  }`}>
-                    {interaction.type === 'Call' ? <PhoneOutgoing size={16} /> : <MessageSquare size={16} />}
+              {interactions.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-8 text-center">No recent interactions logged.</p>
+              ) : (
+                interactions.map(interaction => (
+                  <div key={interaction.id} className="flex items-start gap-4 border-b pb-4 last:border-0 last:pb-0">
+                    <div className={`p-2 rounded-full ${
+                      interaction.type === 'Call' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'
+                    }`}>
+                      {interaction.type === 'Call' ? <PhoneOutgoing size={16} /> : <MessageSquare size={16} />}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold">{interaction.customerName}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{interaction.content}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{new Date(interaction.date).toLocaleDateString()}</p>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold">{interaction.customerName}</p>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{interaction.content}</p>
-                    <p className="text-xs text-muted-foreground font-mono">{interaction.date}</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Sales Pipeline Summary</CardTitle>
+            <CardTitle>Pipeline Breakdown</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {['Discovery', 'Proposal', 'Negotiation'].map(stage => {
               const stageLeads = leads.filter(l => l.stage === stage);
               const count = stageLeads.length;
-              const val = stageLeads.reduce((sum, l) => sum + l.value, 0);
+              const val = stageLeads.reduce((sum, l) => sum + (l.value || 0), 0);
               
               return (
                 <div key={stage} className="space-y-2">
@@ -129,20 +151,20 @@ export default function CRMDashboardPage() {
                     <span className="text-muted-foreground">{count} deals</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-xs text-muted-foreground">Total Value</span>
+                    <span className="text-xs text-muted-foreground">Value</span>
                     <span className="font-bold">{formatCurrency(val)}</span>
                   </div>
                   <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-primary" 
-                      style={{ width: `${(count / leads.length) * 100}%` }} 
+                      style={{ width: `${leads.length > 0 ? (count / leads.length) * 100 : 0}%` }} 
                     />
                   </div>
                 </div>
               );
             })}
             <Button className="w-full mt-4" variant="outline" asChild>
-              <Link href="/crm/pipeline">Detailed Pipeline View</Link>
+              <Link href="/crm/pipeline">View Full Pipeline</Link>
             </Button>
           </CardContent>
         </Card>

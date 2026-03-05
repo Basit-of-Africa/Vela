@@ -1,0 +1,64 @@
+
+{
+  "entities": {
+    "Customer": {
+      "title": "Customer",
+      "description": "A client or lead in the CRM.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "company": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Lead", "Inactive"] },
+        "totalValue": { "type": "number" },
+        "lastContact": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "status"]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "A potential deal in the sales pipeline.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "customerName": { "type": "string" },
+        "value": { "type": "number" },
+        "stage": { "type": "string", "enum": ["Discovery", "Proposal", "Negotiation", "Closed Won", "Closed Lost"] },
+        "probability": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "customerName", "value", "stage"]
+    },
+    "Interaction": {
+      "title": "Interaction",
+      "description": "A touchpoint with a customer.",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "type": { "type": "string", "enum": ["Call", "Email", "Meeting", "Note"] },
+        "content": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customerId", "type", "content", "date"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com"]
+  },
+  "firestore": {
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Collection of business customers."
+    },
+    "/leads/{leadId}": {
+      "schema": "Lead",
+      "description": "Sales pipeline leads and deals."
+    },
+    "/interactions/{interactionId}": {
+      "schema": "Interaction",
+      "description": "History of client interactions."
+    }
+  }
+}
