@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Firestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -49,9 +50,29 @@ export async function triggerCustomerOnboarding(db: Firestore, userId: string, c
 
 /**
  * Automates actions when a lead is moved to "Closed Won".
+ * BRIDGING CRM -> PROJECTS -> CALENDAR
  */
 export async function triggerDealWonAutomation(db: Firestore, userId: string, lead: { title: string; customerName: string; value: number }) {
-  // 1. Create a Project Kickoff Meeting
+  // 1. Create a Project Record automatically
+  const projectData = {
+    userId,
+    customerName: lead.customerName,
+    title: lead.title,
+    status: 'Active',
+    progress: 0,
+    budget: lead.value,
+    dueDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0], // Default 30 days
+  };
+
+  addDoc(collection(db, 'projects'), projectData).catch(async () => {
+    errorEmitter.emit('permission-error', new FirestorePermissionError({
+      path: 'projects',
+      operation: 'create',
+      requestResourceData: projectData,
+    }));
+  });
+
+  // 2. Create a Project Kickoff Meeting
   const nextWeek = new Date();
   nextWeek.setDate(nextWeek.getDate() + 7);
 
@@ -71,12 +92,12 @@ export async function triggerDealWonAutomation(db: Firestore, userId: string, le
     }));
   });
 
-  // 2. Log a "Victory" interaction
+  // 3. Log a "Victory" interaction
   const interactionData = {
     userId,
     customerName: lead.customerName,
     type: 'Meeting',
-    content: `Victory! Deal "${lead.title}" was won. System automatically scheduled the project kickoff for ${nextWeek.toLocaleDateString()}.`,
+    content: `Victory! Deal "${lead.title}" won. System automatically initialized the Project and scheduled the kickoff for ${nextWeek.toLocaleDateString()}.`,
     date: new Date().toISOString(),
   };
 

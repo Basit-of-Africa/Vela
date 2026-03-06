@@ -32,6 +32,22 @@
       },
       "required": ["userId", "title", "customerName", "value", "stage"]
     },
+    "Project": {
+      "title": "Project",
+      "description": "A post-sale delivery project.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "title": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "On Hold", "Completed"] },
+        "progress": { "type": "number" },
+        "budget": { "type": "number" },
+        "dueDate": { "type": "string", "format": "date" }
+      },
+      "required": ["userId", "title", "status", "customerName"]
+    },
     "Interaction": {
       "title": "Interaction",
       "description": "A touchpoint with a customer.",
@@ -126,6 +142,7 @@
   "firestore": {
     "/customers/{customerId}": { "schema": "Customer", "description": "Business customers." },
     "/leads/{leadId}": { "schema": "Lead", "description": "Sales deals." },
+    "/projects/{projectId}": { "schema": "Project", "description": "Active delivery projects." },
     "/interactions/{interactionId}": { "schema": "Interaction", "description": "Client interaction logs." },
     "/employees/{employeeId}": { "schema": "Employee", "description": "Staff members." },
     "/leaveRequests/{requestId}": { "schema": "LeaveRequest", "description": "Time-off requests." },

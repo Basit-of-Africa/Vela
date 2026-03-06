@@ -1,3 +1,4 @@
+
 export type Transaction = {
   id: string;
   date: string;
@@ -9,7 +10,7 @@ export type Transaction = {
 
 export type Appointment = {
   id: string;
-  date: Date;
+  date: string;
   title: string;
   description: string;
 };
@@ -23,6 +24,18 @@ export type Employee = {
   status: 'Active' | 'Onboarding' | 'On Leave' | 'Terminated';
   joinDate: string;
   avatar?: string;
+};
+
+export type Project = {
+  id: string;
+  userId: string;
+  customerId?: string;
+  customerName: string;
+  title: string;
+  status: 'Active' | 'On Hold' | 'Completed';
+  progress: number;
+  budget: number;
+  dueDate: string;
 };
 
 export type InductionTask = {

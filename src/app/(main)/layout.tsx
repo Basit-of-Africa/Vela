@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -39,7 +40,8 @@ import {
   TrendingUp,
   CircleDollarSign,
   LogOut,
-  Loader2
+  Loader2,
+  Kanban
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -63,26 +65,25 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   }
 
   const mainNav = [
-    { href: "/dashboard", icon: <LayoutDashboard className="h-4 w-4" />, label: "Dashboard" },
-    { href: "/transactions", icon: <ArrowLeftRight className="h-4 w-4" />, label: "Transactions" },
+    { href: "/dashboard", icon: <LayoutDashboard className="h-4 w-4" />, label: "Command Center" },
+    { href: "/transactions", icon: <ArrowLeftRight className="h-4 w-4" />, label: "Ledger" },
+    { href: "/projects", icon: <Kanban className="h-4 w-4" />, label: "Projects" },
     { href: "/schedule", icon: <Calendar className="h-4 w-4" />, label: "Schedule" },
-    { href: "/predictive-insights", icon: <BrainCircuit className="h-4 w-4" />, label: "Insights" },
+    { href: "/predictive-insights", icon: <BrainCircuit className="h-4 w-4" />, label: "Forecasts" },
   ]
 
   const crmNav = [
-    { href: "/crm/dashboard", icon: <CircleDollarSign className="h-4 w-4" />, label: "CRM Overview" },
-    { href: "/crm/customers", icon: <Contact className="h-4 w-4" />, label: "Customers" },
-    { href: "/crm/pipeline", icon: <TrendingUp className="h-4 w-4" />, label: "Sales Pipeline" },
+    { href: "/crm/dashboard", icon: <CircleDollarSign className="h-4 w-4" />, label: "Sales Hub" },
+    { href: "/crm/customers", icon: <Contact className="h-4 w-4" />, label: "Client CRM" },
+    { href: "/crm/pipeline", icon: <TrendingUp className="h-4 w-4" />, label: "Pipeline" },
   ]
 
   const hrNav = [
-    { href: "/hr/dashboard", icon: <Briefcase className="h-4 w-4" />, label: "HR Dashboard" },
-    { href: "/hr/employees", icon: <Users className="h-4 w-4" />, label: "Directory" },
-    { href: "/hr/induction", icon: <UserPlus className="h-4 w-4" />, label: "Induction" },
-    { href: "/hr/leave", icon: <PlaneLanding className="h-4 w-4" />, label: "Leave Requests" },
-    { href: "/hr/performance", icon: <Star className="h-4 w-4" />, label: "Performance" },
-    { href: "/hr/queries", icon: <MessageSquare className="h-4 w-4" />, label: "Helpdesk" },
-    { href: "/hr/training", icon: <GraduationCap className="h-4 w-4" />, label: "Training" },
+    { href: "/hr/dashboard", icon: <Briefcase className="h-4 w-4" />, label: "HR Console" },
+    { href: "/hr/employees", icon: <Users className="h-4 w-4" />, label: "Team" },
+    { href: "/hr/leave", icon: <PlaneLanding className="h-4 w-4" />, label: "Time Off" },
+    { href: "/hr/queries", icon: <MessageSquare className="h-4 w-4" />, label: "Support" },
+    { href: "/hr/training", icon: <GraduationCap className="h-4 w-4" />, label: "Academy" },
   ]
 
   if (loading || !user) {
@@ -146,7 +147,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </SidebarGroup>
 
           <SidebarGroup>
-            <SidebarGroupLabel>Team Management</SidebarGroupLabel>
+            <SidebarGroupLabel>Human Resources</SidebarGroupLabel>
             <SidebarMenu>
               {hrNav.map((item) => (
                 <SidebarMenuItem key={item.href}>
