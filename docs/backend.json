@@ -10,7 +10,8 @@
         "email": { "type": "string", "format": "email" },
         "displayName": { "type": "string" },
         "role": { "type": "string", "enum": ["Super Admin", "Admin", "Staff"] },
-        "lastLogin": { "type": "string", "format": "date-time" }
+        "lastLogin": { "type": "string", "format": "date-time" },
+        "isProvisioned": { "type": "boolean" }
       },
       "required": ["userId", "role"]
     },
@@ -19,7 +20,7 @@
       "description": "A client or lead in the CRM.",
       "type": "object",
       "properties": {
-        "userId": { "type": "string", "description": "The ID of the user/business owner." },
+        "userId": { "type": "string", "description": "The ID of the business owner/tenant." },
         "name": { "type": "string" },
         "company": { "type": "string" },
         "email": { "type": "string", "format": "email" },
@@ -35,7 +36,7 @@
       "description": "A potential deal in the sales pipeline.",
       "type": "object",
       "properties": {
-        "userId": { "type": "string", "description": "The ID of the user/business owner." },
+        "userId": { "type": "string" },
         "title": { "type": "string" },
         "customerName": { "type": "string" },
         "value": { "type": "number" },
@@ -66,21 +67,21 @@
       "description": "A touchpoint with a customer.",
       "type": "object",
       "properties": {
-        "userId": { "type": "string", "description": "The ID of the user/business owner." },
+        "userId": { "type": "string" },
         "customerId": { "type": "string" },
         "customerName": { "type": "string" },
         "type": { "type": "string", "enum": ["Call", "Email", "Meeting", "Note"] },
         "content": { "type": "string" },
         "date": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "customerId", "type", "content", "date"]
+      "required": ["userId", "type", "content", "date"]
     },
     "Employee": {
       "title": "Employee",
       "description": "A company team member.",
       "type": "object",
       "properties": {
-        "userId": { "type": "string", "description": "The ID of the user/business owner." },
+        "userId": { "type": "string" },
         "name": { "type": "string" },
         "role": { "type": "string" },
         "department": { "type": "string" },
@@ -95,7 +96,7 @@
       "description": "An employee time-off request.",
       "type": "object",
       "properties": {
-        "userId": { "type": "string", "description": "The ID of the user/business owner." },
+        "userId": { "type": "string" },
         "employeeId": { "type": "string" },
         "employeeName": { "type": "string" },
         "type": { "type": "string", "enum": ["Annual", "Sick", "Maternity", "Unpaid"] },
@@ -111,7 +112,7 @@
       "description": "An internal helpdesk ticket.",
       "type": "object",
       "properties": {
-        "userId": { "type": "string", "description": "The ID of the user/business owner." },
+        "userId": { "type": "string" },
         "employeeName": { "type": "string" },
         "subject": { "type": "string" },
         "message": { "type": "string" },
@@ -147,13 +148,27 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "date", "title"]
+    },
+    "Settings": {
+      "title": "System Settings",
+      "description": "Tenant-level configuration for automation and AI behavior.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "autoOnboarding": { "type": "boolean" },
+        "autoProjectCreation": { "type": "boolean" },
+        "healthThreshold": { "type": "number" },
+        "aiReportTone": { "type": "string" },
+        "trainingPassMark": { "type": "number" },
+        "defaultProjectDuration": { "type": "number" }
+      }
     }
   },
   "auth": {
     "providers": ["google.com"]
   },
   "firestore": {
-    "/users/{userId}": { "schema": "UserProfile", "description": "System users and their roles." },
+    "/users/{userId}": { "schema": "UserProfile", "description": "System users and roles." },
     "/customers/{customerId}": { "schema": "Customer", "description": "Business customers." },
     "/leads/{leadId}": { "schema": "Lead", "description": "Sales deals." },
     "/projects/{projectId}": { "schema": "Project", "description": "Active delivery projects." },
@@ -162,6 +177,7 @@
     "/leaveRequests/{requestId}": { "schema": "LeaveRequest", "description": "Time-off requests." },
     "/hrQueries/{queryId}": { "schema": "HRQuery", "description": "Helpdesk tickets." },
     "/transactions/{transactionId}": { "schema": "Transaction", "description": "Financial records." },
-    "/appointments/{appointmentId}": { "schema": "Appointment", "description": "Calendar appointments." }
+    "/appointments/{appointmentId}": { "schema": "Appointment", "description": "Calendar appointments." },
+    "/settings/{userId}": { "schema": "Settings", "description": "Tenant configuration." }
   }
 }
