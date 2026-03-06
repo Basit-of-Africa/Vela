@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -28,7 +27,6 @@ import {
   ArrowLeftRight,
   Calendar,
   BrainCircuit,
-  UserCircle,
   Settings,
   Users,
   UserPlus,
@@ -44,6 +42,7 @@ import {
   Loader2
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -101,7 +100,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           <div className="flex items-center gap-2 px-2 py-2">
             <Link href="/dashboard" className="flex items-center gap-2">
               <Logo className="text-primary h-6 w-6" />
-              <span className="font-headline text-lg font-bold tracking-tight">BizHub</span>
+              <span className="font-headline text-xl font-extrabold tracking-tighter">vela</span>
             </Link>
           </div>
         </SidebarHeader>

@@ -30,13 +30,12 @@ export default function LoginPage() {
     setIsAuthenticating(true);
     try {
       const provider = new GoogleAuthProvider();
-      // Force account selection to help with debugging multiple accounts
       provider.setCustomParameters({ prompt: 'select_account' });
       
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
         toast({
-          title: "Welcome to BizHub",
+          title: "Welcome to Vela",
           description: `Successfully signed in as ${result.user.displayName || result.user.email}`,
         });
         router.push("/dashboard");
@@ -97,8 +96,8 @@ export default function LoginPage() {
                 <Logo className="h-10 w-10 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold tracking-tight">Welcome to BizHub</CardTitle>
-            <CardDescription>Your Business Operating System. Sign in to continue.</CardDescription>
+            <CardTitle className="text-2xl font-bold tracking-tight">Welcome to Vela</CardTitle>
+            <CardDescription>Your Modern Business Operating System. Sign in to continue.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button 

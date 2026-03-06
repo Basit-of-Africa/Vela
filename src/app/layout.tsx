@@ -5,8 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { FirebaseClientProvider } from "@/firebase/client-provider"
 
 export const metadata: Metadata = {
-  title: 'BizHub',
-  description: 'Your Small Business Management Hub',
+  title: 'Vela',
+  description: 'Your Modern Business Operating System',
 };
 
 export default function RootLayout({

@@ -29,10 +29,10 @@ export const appointments: Appointment[] = [
 ];
 
 export const employees: Employee[] = [
-  { id: 'emp_1', name: 'Alice Johnson', role: 'Senior Developer', department: 'Engineering', email: 'alice@bizhub.com', status: 'Active', joinDate: '2022-03-15' },
-  { id: 'emp_2', name: 'Bob Smith', role: 'Product Designer', department: 'Design', email: 'bob@bizhub.com', status: 'Active', joinDate: '2023-01-10' },
-  { id: 'emp_3', name: 'Charlie Davis', role: 'Marketing Lead', department: 'Marketing', email: 'charlie@bizhub.com', status: 'On Leave', joinDate: '2021-11-05' },
-  { id: 'emp_4', name: 'Diana Prince', role: 'Junior QA', department: 'Engineering', email: 'diana@bizhub.com', status: 'Onboarding', joinDate: '2024-05-20' },
+  { id: 'emp_1', name: 'Alice Johnson', role: 'Senior Developer', department: 'Engineering', email: 'alice@vela.com', status: 'Active', joinDate: '2022-03-15' },
+  { id: 'emp_2', name: 'Bob Smith', role: 'Product Designer', department: 'Design', email: 'bob@vela.com', status: 'Active', joinDate: '2023-01-10' },
+  { id: 'emp_3', name: 'Charlie Davis', role: 'Marketing Lead', department: 'Marketing', email: 'charlie@vela.com', status: 'On Leave', joinDate: '2021-11-05' },
+  { id: 'emp_4', name: 'Diana Prince', role: 'Junior QA', department: 'Engineering', email: 'diana@vela.com', status: 'Onboarding', joinDate: '2024-05-20' },
 ];
 
 export const leaveRequests: LeaveRequest[] = [
