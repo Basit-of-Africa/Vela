@@ -1,15 +1,15 @@
-
 "use client"
 
 import { useState, useMemo } from "react"
 import { getPredictiveInsights } from "@/lib/actions"
 import { useCollection, useFirestore, useUser } from "@/firebase"
-import { collection, query, where, orderBy } from "firebase/firestore"
+import { collection, query, where } from "firebase/firestore"
 import type { PredictiveBudgetingOutput } from "@/ai/flows/predictive-budgeting-insights"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, Lightbulb, BarChart, TrendingUp, TrendingDown, Wallet, Sparkles } from "lucide-react"
 
@@ -21,10 +21,10 @@ export default function PredictiveInsightsPage() {
   const [results, setResults] = useState<PredictiveBudgetingOutput | null>(null)
   const { toast } = useToast()
 
-  // Fetch real historical data for AI analysis
+  // Fetch real historical data for AI analysis, scoped to this tenant
   const transactionsQuery = useMemo(() => {
     if (!db || !user) return null;
-    return query(collection(db, 'transactions'), where('userId', '==', user.uid), orderBy('date', 'desc'));
+    return query(collection(db, 'transactions'), where('userId', '==', user.uid));
   }, [db, user]);
 
   const { data: transactions = [], loading: loadingData } = useCollection(transactionsQuery);
@@ -33,8 +33,8 @@ export default function PredictiveInsightsPage() {
     if (transactions.length < 3) {
       toast({
         variant: "destructive",
-        title: "Insufficient Data",
-        description: "Please log at least 3 transactions to generate reliable forecasts."
+        title: "Insufficient Ledger Data",
+        description: "Please log at least 3 transactions to generate reliable business forecasts."
       });
       return;
     }
@@ -42,7 +42,7 @@ export default function PredictiveInsightsPage() {
     setIsGenerating(true);
     setResults(null);
     
-    // Pass real Firestore data to the AI agent
+    // Pass live Firestore data to the AI agent
     const res = await getPredictiveInsights({
       historicalData: transactions as any,
       predictionPeriodMonths: predictionPeriod,
@@ -50,7 +50,7 @@ export default function PredictiveInsightsPage() {
 
     if (res.success && res.data) {
       setResults(res.data);
-      toast({ title: "Forecast Complete", description: "AI has synthesized your financial future." });
+      toast({ title: "Forecast Complete", description: "AI has synthesized your business future." });
     } else {
       toast({
         variant: "destructive",
@@ -76,15 +76,15 @@ export default function PredictiveInsightsPage() {
           <Sparkles className="h-6 w-6 text-primary fill-primary/10" />
         </h1>
         <p className="text-muted-foreground">
-          Advanced AI forecasting based on your live financial ledger.
+          Advanced AI forecasting based on your live business instance.
         </p>
       </header>
 
       <Card className="border-primary/20 bg-primary/[0.02]">
         <CardContent className="flex flex-col sm:flex-row items-center gap-6 p-6">
           <div className="space-y-1 flex-1">
-             <Label htmlFor="prediction-period" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Forecast Horizon</Label>
-             <p className="text-xs text-muted-foreground">How many months forward should the agent look?</p>
+             <Label htmlFor="prediction-period" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Forecast Horizon</Label>
+             <p className="text-sm font-medium">Project business performance for the next few months.</p>
           </div>
           <div className="flex items-center gap-3">
             <Input
@@ -102,7 +102,7 @@ export default function PredictiveInsightsPage() {
               ) : (
                 <BarChart className="mr-2 h-4 w-4" />
               )}
-              {isGenerating ? "Synthesizing..." : "Generate Forecast"}
+              {isGenerating ? "Reasoning..." : "Run Forecast"}
             </Button>
           </div>
         </CardContent>
@@ -115,8 +115,8 @@ export default function PredictiveInsightsPage() {
                 <Sparkles className="h-6 w-6 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
             </div>
             <div className="space-y-1">
-                <p className="font-bold text-lg">AI Agent is Reasoning...</p>
-                <p className="text-sm text-muted-foreground max-w-sm">We're analyzing {transactions.length} historical entries to build a predictive model for your business.</p>
+                <p className="font-bold text-lg">Vela AI is analyzing your ledger...</p>
+                <p className="text-sm text-muted-foreground max-w-sm">Synthesizing trends from {transactions.length} historical entries to build your model.</p>
             </div>
         </div>
       )}
@@ -127,30 +127,30 @@ export default function PredictiveInsightsPage() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-xl">
                         <Wallet className="h-5 w-5 text-primary" />
-                        Executive Budget Forecast
+                        Executive Forecast Summary
                     </CardTitle>
                     <CardDescription>
-                        Consolidated projections for the next {predictionPeriod} months.
+                        Consolidated projections for the next {predictionPeriod} months based on current velocity.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     <div className="rounded-xl border bg-background p-5 shadow-sm">
                         <div className="flex items-center justify-between text-xs font-bold uppercase tracking-tighter text-muted-foreground mb-3">
-                            <span>Est. Revenue</span>
+                            <span>Predicted Income</span>
                             <TrendingUp className="h-4 w-4 text-green-500" />
                         </div>
                         <p className="text-3xl font-extrabold text-foreground">{formatCurrency(results.predictedBudgetSummary.predictedIncome)}</p>
                     </div>
                      <div className="rounded-xl border bg-background p-5 shadow-sm">
                         <div className="flex items-center justify-between text-xs font-bold uppercase tracking-tighter text-muted-foreground mb-3">
-                            <span>Est. Burn Rate</span>
+                            <span>Predicted Burn</span>
                             <TrendingDown className="h-4 w-4 text-red-500" />
                         </div>
                         <p className="text-3xl font-extrabold text-foreground">{formatCurrency(results.predictedBudgetSummary.predictedExpenses)}</p>
                     </div>
                     <div className="rounded-xl border bg-primary/5 p-5 shadow-sm border-primary/20">
                         <div className="flex items-center justify-between text-xs font-bold uppercase tracking-tighter text-primary mb-3">
-                            <span>Est. Net Profit</span>
+                            <span>Net Profit Projection</span>
                             <Wallet className="h-4 w-4 text-primary" />
                         </div>
                         <p className="text-3xl font-extrabold text-primary">{formatCurrency(results.predictedBudgetSummary.predictedProfit)}</p>
@@ -160,7 +160,7 @@ export default function PredictiveInsightsPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-base font-bold">Projected Revenue Mix</CardTitle>
+                    <CardTitle className="text-base font-bold">Income Distribution</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
@@ -181,7 +181,7 @@ export default function PredictiveInsightsPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-base font-bold">Projected Expense Allocation</CardTitle>
+                    <CardTitle className="text-base font-bold">Expense Allocation</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
@@ -228,12 +228,10 @@ export default function PredictiveInsightsPage() {
               <BarChart className="h-10 w-10 text-muted-foreground opacity-20" />
               <div className="text-center space-y-1">
                   <p className="font-bold">No Data for Analysis</p>
-                  <p className="text-sm text-muted-foreground">Start logging transactions to unlock AI-powered forecasting.</p>
+                  <p className="text-sm text-muted-foreground">Start logging transactions to unlock AI-powered forecasting for your business.</p>
               </div>
           </div>
       )}
     </div>
   )
 }
-
-import { Label } from "@/components/ui/label"

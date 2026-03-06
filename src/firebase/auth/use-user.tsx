@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -42,6 +41,7 @@ export function useUser() {
   useEffect(() => {
     if (!user || !db) return;
 
+    setLoading(true);
     const docRef = doc(db, 'users', user.uid);
     const unsubscribeDoc = onSnapshot(docRef, async (snapshot) => {
       if (snapshot.exists()) {
@@ -68,7 +68,7 @@ export function useUser() {
           await setDoc(doc(db, 'users', user.uid), finalProfile);
           setProfile(finalProfile);
         } else {
-          // 2. New Tenant: First person to sign up in a new UID space is the Super Admin (The Owner)
+          // 2. New Tenant: First person to sign up is the Super Admin
           const newProfile: UserProfile = {
             userId: user.uid,
             email: user.email || '',
@@ -81,7 +81,8 @@ export function useUser() {
         }
         setLoading(false);
       }
-    }, () => {
+    }, (error) => {
+      console.error("Profile sync failed:", error);
       setLoading(false);
     });
 
@@ -91,13 +92,15 @@ export function useUser() {
   const currentUser = useMemo(() => {
     if (user) {
       return {
-        ...user,
+        uid: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
         role: profile?.role || 'Staff'
       };
     }
-    // For the current demo environment, we return the MOCK_USER 
-    // to allow full exploration of Admin features without login.
-    return MOCK_USER as any;
+    // Demo Mode: Super Admin access
+    return MOCK_USER;
   }, [user, profile]);
 
   return { 
