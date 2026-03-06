@@ -43,7 +43,8 @@ import {
   ShieldCheck,
   BarChart3,
   Globe,
-  Building2
+  Building2,
+  Puzzle
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -87,6 +88,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         { href: "/crm/dashboard", icon: <CircleDollarSign className="h-4 w-4" />, label: "Sales Hub" },
         { href: "/crm/customers", icon: <Contact className="h-4 w-4" />, label: "Client CRM" },
         { href: "/crm/pipeline", icon: <TrendingUp className="h-4 w-4" />, label: "Pipeline" },
+      ]
+    },
+    {
+      label: "System & Tools",
+      roles: ["Super Admin", "Admin"],
+      items: [
+        { href: "/integrations", icon: <Puzzle className="h-4 w-4" />, label: "App Directory" },
       ]
     },
     {

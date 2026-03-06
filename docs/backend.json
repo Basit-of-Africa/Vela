@@ -11,7 +11,10 @@
         "displayName": { "type": "string" },
         "role": { "type": "string", "enum": ["Super Admin", "Admin", "Staff"] },
         "lastLogin": { "type": "string", "format": "date-time" },
-        "isProvisioned": { "type": "boolean" }
+        "isProvisioned": { "type": "boolean" },
+        "setupCompleted": { "type": "boolean" },
+        "businessName": { "type": "string" },
+        "industry": { "type": "string" }
       },
       "required": ["userId", "role"]
     },
@@ -91,103 +94,18 @@
       },
       "required": ["userId", "name", "role", "email", "status"]
     },
-    "LeaveRequest": {
-      "title": "Leave Request",
-      "description": "An employee time-off request.",
+    "Integration": {
+      "title": "Integration",
+      "description": "External tool connection settings.",
       "type": "object",
       "properties": {
         "userId": { "type": "string" },
-        "employeeId": { "type": "string" },
-        "employeeName": { "type": "string" },
-        "type": { "type": "string", "enum": ["Annual", "Sick", "Maternity", "Unpaid"] },
-        "startDate": { "type": "string", "format": "date" },
-        "endDate": { "type": "string", "format": "date" },
-        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
-        "reason": { "type": "string" }
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "status": { "type": "string" },
+        "lastSync": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "employeeId", "type", "startDate", "endDate", "status"]
-    },
-    "HRQuery": {
-      "title": "HR Query",
-      "description": "An internal helpdesk ticket.",
-      "type": "object",
-      "properties": {
-        "userId": { "type": "string" },
-        "employeeName": { "type": "string" },
-        "subject": { "type": "string" },
-        "message": { "type": "string" },
-        "status": { "type": "string", "enum": ["Open", "In Progress", "Resolved"] },
-        "priority": { "type": "string", "enum": ["Low", "Medium", "High"] },
-        "date": { "type": "string", "format": "date-time" }
-      },
-      "required": ["userId", "employeeName", "subject", "message", "status", "priority"]
-    },
-    "Transaction": {
-      "title": "Transaction",
-      "description": "A financial record.",
-      "type": "object",
-      "properties": {
-        "userId": { "type": "string" },
-        "date": { "type": "string" },
-        "type": { "type": "string", "enum": ["income", "expense"] },
-        "category": { "type": "string" },
-        "description": { "type": "string" },
-        "amount": { "type": "number" }
-      },
-      "required": ["userId", "date", "type", "category", "amount"]
-    },
-    "Appointment": {
-      "title": "Appointment",
-      "description": "A scheduled event or meeting.",
-      "type": "object",
-      "properties": {
-        "userId": { "type": "string" },
-        "date": { "type": "string", "format": "date-time" },
-        "title": { "type": "string" },
-        "description": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["userId", "date", "title"]
-    },
-    "TrainingModule": {
-      "title": "Training Module",
-      "description": "An educational course.",
-      "type": "object",
-      "properties": {
-        "userId": { "type": "string" },
-        "title": { "type": "string" },
-        "description": { "type": "string" },
-        "duration": { "type": "string" },
-        "category": { "type": "string" },
-        "questions": { "type": "array" }
-      }
-    },
-    "PerformanceReview": {
-      "title": "Performance Review",
-      "description": "Employee appraisal record.",
-      "type": "object",
-      "properties": {
-        "userId": { "type": "string" },
-        "employeeName": { "type": "string" },
-        "rating": { "type": "number" },
-        "feedback": { "type": "string" },
-        "reviewer": { "type": "string" },
-        "date": { "type": "string" }
-      }
-    },
-    "Settings": {
-      "title": "System Settings",
-      "description": "Tenant-level configuration for automation and AI behavior.",
-      "type": "object",
-      "properties": {
-        "userId": { "type": "string" },
-        "autoOnboarding": { "type": "boolean" },
-        "autoProjectCreation": { "type": "boolean" },
-        "healthThreshold": { "type": "number" },
-        "aiReportTone": { "type": "string" },
-        "trainingPassMark": { "type": "number" },
-        "defaultProjectDuration": { "type": "number" }
-      }
+      "required": ["userId", "name", "status"]
     }
   },
   "auth": {
@@ -198,14 +116,6 @@
     "/customers/{customerId}": { "schema": "Customer", "description": "Business customers." },
     "/leads/{leadId}": { "schema": "Lead", "description": "Sales deals." },
     "/projects/{projectId}": { "schema": "Project", "description": "Active delivery projects." },
-    "/interactions/{interactionId}": { "schema": "Interaction", "description": "Client interaction logs." },
-    "/employees/{employeeId}": { "schema": "Employee", "description": "Staff members." },
-    "/leaveRequests/{requestId}": { "schema": "LeaveRequest", "description": "Time-off requests." },
-    "/hrQueries/{queryId}": { "schema": "HRQuery", "description": "Helpdesk tickets." },
-    "/transactions/{transactionId}": { "schema": "Transaction", "description": "Financial records." },
-    "/appointments/{appointmentId}": { "schema": "Appointment", "description": "Calendar appointments." },
-    "/trainingModules/{moduleId}": { "schema": "TrainingModule", "description": "LMS courses." },
-    "/performanceReviews/{reviewId}": { "schema": "PerformanceReview", "description": "Employee appraisals." },
-    "/settings/{userId}": { "schema": "Settings", "description": "Tenant configuration." }
+    "/integrations/{integrationId}": { "schema": "Integration", "description": "Tenant tool integrations." }
   }
 }
