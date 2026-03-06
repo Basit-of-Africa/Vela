@@ -149,6 +149,32 @@
       },
       "required": ["userId", "date", "title"]
     },
+    "TrainingModule": {
+      "title": "Training Module",
+      "description": "An educational course.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "duration": { "type": "string" },
+        "category": { "type": "string" },
+        "questions": { "type": "array" }
+      }
+    },
+    "PerformanceReview": {
+      "title": "Performance Review",
+      "description": "Employee appraisal record.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "employeeName": { "type": "string" },
+        "rating": { "type": "number" },
+        "feedback": { "type": "string" },
+        "reviewer": { "type": "string" },
+        "date": { "type": "string" }
+      }
+    },
     "Settings": {
       "title": "System Settings",
       "description": "Tenant-level configuration for automation and AI behavior.",
@@ -178,6 +204,8 @@
     "/hrQueries/{queryId}": { "schema": "HRQuery", "description": "Helpdesk tickets." },
     "/transactions/{transactionId}": { "schema": "Transaction", "description": "Financial records." },
     "/appointments/{appointmentId}": { "schema": "Appointment", "description": "Calendar appointments." },
+    "/trainingModules/{moduleId}": { "schema": "TrainingModule", "description": "LMS courses." },
+    "/performanceReviews/{reviewId}": { "schema": "PerformanceReview", "description": "Employee appraisals." },
     "/settings/{userId}": { "schema": "Settings", "description": "Tenant configuration." }
   }
 }

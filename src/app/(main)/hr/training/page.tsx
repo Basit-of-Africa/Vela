@@ -1,8 +1,9 @@
 
 "use client"
 
-import { useState } from 'react';
-import { trainingModules } from '@/lib/data';
+import { useState, useMemo } from 'react';
+import { useCollection, useFirestore, useUser } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +14,8 @@ import {
   BookOpen, 
   CheckCircle2, 
   ArrowRight,
-  Play
+  Play,
+  Loader2
 } from 'lucide-react';
 import {
   Dialog,
@@ -28,13 +30,24 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
 export default function TrainingPage() {
-  const [activeModule, setActiveModule] = useState<typeof trainingModules[0] | null>(null);
+  const db = useFirestore();
+  const { user } = useUser();
+  const { toast } = useToast();
+
+  const [activeModule, setActiveModule] = useState<any | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [showResult, setShowResult] = useState(false);
-  const { toast } = useToast();
 
-  const handleStartModule = (module: typeof trainingModules[0]) => {
+  const modulesQuery = useMemo(() => {
+    if (!db || !user) return null;
+    // Scoped to the business instance
+    return query(collection(db, 'trainingModules'), where('userId', '==', user.uid));
+  }, [db, user]);
+
+  const { data: trainingModules = [], loading } = useCollection(modulesQuery);
+
+  const handleStartModule = (module: any) => {
     setActiveModule(module);
     setCurrentQuestion(0);
     setAnswers([]);
@@ -52,7 +65,7 @@ export default function TrainingPage() {
   const calculateScore = () => {
     if (!activeModule) return 0;
     let correct = 0;
-    activeModule.questions.forEach((q, i) => {
+    activeModule.questions.forEach((q: any, i: number) => {
       if (answers[i] === q.correctAnswer) correct++;
     });
     return Math.round((correct / activeModule.questions.length) * 100);
@@ -79,42 +92,56 @@ export default function TrainingPage() {
     <div className="flex flex-col gap-6 pb-12">
       <header className="space-y-2">
         <h1 className="font-headline text-3xl font-bold tracking-tight">Interactive Training</h1>
-        <p className="text-muted-foreground">Upskill your team with automated learning modules and certification quizzes.</p>
+        <p className="text-muted-foreground">Multi-tenant learning modules scoped to your organization.</p>
       </header>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {trainingModules.map(module => (
-          <Card key={module.id} className="flex flex-col h-full hover:shadow-lg transition-all border-l-4 border-l-primary/40">
-            <CardHeader>
-              <div className="flex justify-between items-start mb-2">
-                <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
-                  {module.category}
-                </Badge>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
-                  <Clock className="h-3 w-3" /> {module.duration}
-                </div>
-              </div>
-              <CardTitle className="text-xl">{module.title}</CardTitle>
-              <CardDescription className="line-clamp-2">{module.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <BookOpen className="h-4 w-4" /> {module.questions.length} Units
-                </div>
-                <div className="flex items-center gap-1">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" /> Compliance Certification
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="pt-0">
-              <Button className="w-full group" onClick={() => handleStartModule(module)}>
-                <Play className="mr-2 h-4 w-4 group-hover:fill-current" /> Start Training
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {trainingModules.length === 0 ? (
+            <Card className="col-span-full border-dashed p-12 text-center text-muted-foreground">
+              No custom training modules found for this deployment. 
+              <br/>
+              <span className="text-xs">Tip: Admins can upload compliance training in the Settings module.</span>
+            </Card>
+          ) : (
+            trainingModules.map((module: any) => (
+              <Card key={module.id} className="flex flex-col h-full hover:shadow-lg transition-all border-l-4 border-l-primary/40">
+                <CardHeader>
+                  <div className="flex justify-between items-start mb-2">
+                    <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
+                      {module.category}
+                    </Badge>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
+                      <Clock className="h-3 w-3" /> {module.duration}
+                    </div>
+                  </div>
+                  <CardTitle className="text-xl">{module.title}</CardTitle>
+                  <CardDescription className="line-clamp-2">{module.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <BookOpen className="h-4 w-4" /> {module.questions.length} Units
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" /> Compliance Certification
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="pt-0">
+                  <Button className="w-full group" onClick={() => handleStartModule(module)}>
+                    <Play className="mr-2 h-4 w-4 group-hover:fill-current" /> Start Training
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
 
       <Dialog open={!!activeModule} onOpenChange={() => !showResult && setActiveModule(null)}>
         <DialogContent className="sm:max-w-[500px]">
@@ -136,7 +163,7 @@ export default function TrainingPage() {
                   }}
                   className="grid gap-3"
                 >
-                  {activeModule.questions[currentQuestion].options.map((option, idx) => (
+                  {activeModule.questions[currentQuestion].options.map((option: string, idx: number) => (
                     <div key={idx} className={`flex items-center space-x-2 rounded-lg border p-4 transition-colors cursor-pointer hover:bg-muted/50 ${answers[currentQuestion] === idx ? 'border-primary bg-primary/5' : ''}`}>
                       <RadioGroupItem value={idx.toString()} id={`opt-${idx}`} className="sr-only" />
                       <Label htmlFor={`opt-${idx}`} className="flex-1 cursor-pointer font-medium text-sm">{option}</Label>

@@ -41,7 +41,8 @@ import {
   Loader2,
   Kanban,
   ShieldCheck,
-  BarChart3
+  BarChart3,
+  Globe
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -59,7 +60,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     }
   }
 
-  // Define navigation sections with role requirements
   const sections = [
     {
       label: "Operations",
@@ -133,6 +133,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </SidebarContent>
         <SidebarFooter>
           <SidebarMenu>
+             <SidebarMenuItem className="px-2 mb-2">
+                <div className="flex items-center gap-2 p-2 bg-primary/5 border border-primary/20 rounded-md">
+                   <Globe className="h-3 w-3 text-primary" />
+                   <span className="text-[10px] font-bold uppercase tracking-tighter truncate">
+                     Instance: {user?.uid.slice(0, 8)}...
+                   </span>
+                </div>
+             </SidebarMenuItem>
             {["Super Admin", "Admin"].includes(role) && (
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Settings" isActive={pathname === "/settings"}>
