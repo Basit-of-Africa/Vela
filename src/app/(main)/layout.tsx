@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -77,9 +78,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     { href: "/hr/training", icon: <GraduationCap className="h-4 w-4" />, label: "Academy" },
   ]
 
-  // Removed the full-page blocking loader here to ensure the sidebar 
-  // and layout shell are always visible, preventing a "stuck" feeling.
-  
   return (
     <SidebarProvider>
       <Sidebar>
@@ -155,8 +153,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Settings">
-                <Link href="#">
+              <SidebarMenuButton asChild tooltip="Settings" isActive={pathname === "/settings"}>
+                <Link href="/settings">
                   <Settings className="h-4 w-4" />
                   <span>Settings</span>
                 </Link>
