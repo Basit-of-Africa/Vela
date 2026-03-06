@@ -103,7 +103,21 @@
         "category": { "type": "string" },
         "description": { "type": "string" },
         "amount": { "type": "number" }
-      }
+      },
+      "required": ["userId", "date", "type", "category", "amount"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "A scheduled event or meeting.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "date", "title"]
     }
   },
   "auth": {
@@ -117,6 +131,6 @@
     "/leaveRequests/{requestId}": { "schema": "LeaveRequest", "description": "Time-off requests." },
     "/hrQueries/{queryId}": { "schema": "HRQuery", "description": "Helpdesk tickets." },
     "/transactions/{transactionId}": { "schema": "Transaction", "description": "Financial records." },
-    "/appointments/{appointmentId}": { "schema": "object", "description": "Calendar appointments." }
+    "/appointments/{appointmentId}": { "schema": "Appointment", "description": "Calendar appointments." }
   }
 }

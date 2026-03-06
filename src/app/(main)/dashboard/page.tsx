@@ -15,11 +15,13 @@ import {
   ArrowRight,
   Briefcase,
   Contact,
-  Loader2
+  Loader2,
+  Zap
 } from 'lucide-react';
 import Link from 'next/link';
 import FinancialSummaryCards from '@/components/dashboard/financial-summary-cards';
 import OverviewChart from '@/components/dashboard/overview-chart';
+import FinancialHealthCard from '@/components/dashboard/financial-health-card';
 
 export default function DashboardPage() {
   const db = useFirestore();
@@ -55,18 +57,19 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-8 pb-12">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-headline text-4xl font-extrabold tracking-tight text-foreground">
+          <h1 className="font-headline text-4xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
             Command Center
+            <Zap className="h-8 w-8 text-primary fill-current animate-pulse" />
           </h1>
           <p className="text-lg text-muted-foreground">
-            Unified view of your business operations.
+            Unified, intelligent view of your entire business operation.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/crm/customers">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              New Lead
+            <Link href="/crm/pipeline">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Sales Pipeline
             </Link>
           </Button>
           <Button size="sm" asChild>
@@ -143,6 +146,8 @@ export default function DashboardPage() {
         </div>
 
         <div className="lg:col-span-1 space-y-6">
+          <FinancialHealthCard transactions={transactions as any} />
+
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Quick Access</CardTitle>
@@ -163,16 +168,19 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-primary text-primary-foreground">
+          <Card className="bg-primary text-primary-foreground border-none shadow-lg">
             <CardHeader>
-              <CardTitle className="text-lg">OS Tip</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Zap className="h-5 w-5 fill-current" />
+                OS Insight
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm opacity-90 leading-relaxed">
-                Your average deal size is trending up! Consider hiring a Junior Account Manager to handle the increased load in the CRM.
+                Your customer acquisition cost is down 12% this month. The sales team in {leads.length > 0 ? "Pipeline" : "CRM"} has closed {leads.filter(l => l.stage === 'Closed Won').length} deals. High efficiency detected!
               </p>
               <Button variant="secondary" size="sm" className="mt-4 w-full" asChild>
-                <Link href="/hr/employees">View Hiring Needs</Link>
+                <Link href="/hr/employees">View Team Performance</Link>
               </Button>
             </CardContent>
           </Card>
