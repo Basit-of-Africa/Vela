@@ -40,7 +40,8 @@ import {
   LogOut,
   Loader2,
   Kanban,
-  ShieldCheck
+  ShieldCheck,
+  BarChart3
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -69,7 +70,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         { href: "/projects", icon: <Kanban className="h-4 w-4" />, label: "Projects" },
         { href: "/schedule", icon: <Calendar className="h-4 w-4" />, label: "Schedule" },
         { href: "/predictive-insights", icon: <BrainCircuit className="h-4 w-4" />, label: "Forecasts" },
-      ]
+        { href: "/analytics", icon: <BarChart3 className="h-4 w-4" />, label: "Analytics", roles: ["Super Admin", "Admin"] },
+      ].filter(item => !item.roles || item.roles.includes(role))
     },
     {
       label: "Sales & CRM",
