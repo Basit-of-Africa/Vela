@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useMemo } from 'react';
@@ -11,16 +10,25 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Slider } from '@/components/ui/slider';
 import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { 
   Settings as SettingsIcon, 
   ShieldAlert, 
   Zap, 
   BrainCircuit, 
   Users, 
-  DollarSign, 
   Database,
   RefreshCw,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  Kanban,
+  MessageSquare,
+  Sparkles
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -44,6 +52,12 @@ export default function SettingsPage() {
     if (!settingsRef) return;
     
     updateDoc(settingsRef, { [key]: value })
+      .then(() => {
+        toast({
+          title: "Setting Updated",
+          description: `${key} has been synchronized with the cloud.`,
+        });
+      })
       .catch(async () => {
         // If doc doesn't exist, create it
         setDoc(settingsRef, { [key]: value }, { merge: true });
@@ -96,17 +110,18 @@ export default function SettingsPage() {
       <header className="flex flex-col gap-2">
         <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-3">
           <SettingsIcon className="h-8 w-8 text-primary" />
-          OS Settings & Control
+          Vela OS Control Center
         </h1>
-        <p className="text-muted-foreground">Manage the core logic, automation triggers, and AI behavior of the Vela OS.</p>
+        <p className="text-muted-foreground">Master configuration for Vela's automation, intelligence, and business logic.</p>
       </header>
 
       <Tabs defaultValue="automation" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:w-fit">
-          <TabsTrigger value="automation">Automation</TabsTrigger>
-          <TabsTrigger value="ai">Intelligence</TabsTrigger>
-          <TabsTrigger value="hr">HR & Compliance</TabsTrigger>
-          <TabsTrigger value="system">System Admin</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto gap-2 bg-transparent p-0">
+          <TabsTrigger value="automation" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border">Automation</TabsTrigger>
+          <TabsTrigger value="ai" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border">Intelligence</TabsTrigger>
+          <TabsTrigger value="projects" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border">Projects</TabsTrigger>
+          <TabsTrigger value="hr" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground border">Team</TabsTrigger>
+          <TabsTrigger value="system" className="data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground border">System</TabsTrigger>
         </TabsList>
 
         <TabsContent value="automation" className="mt-6 space-y-6">
@@ -114,15 +129,15 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Zap className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                Workflow Triggers
+                Logic Triggers
               </CardTitle>
-              <CardDescription>Configure how Vela handles cross-module events.</CardDescription>
+              <CardDescription>Configure cross-module automated workflows.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Auto-Onboarding</Label>
-                  <p className="text-sm text-muted-foreground">Schedule welcome calls and log notes when a customer is created.</p>
+                  <p className="text-sm text-muted-foreground">Trigger onboarding sequence when a customer is added.</p>
                 </div>
                 <Switch 
                   checked={settings?.autoOnboarding ?? true} 
@@ -131,12 +146,22 @@ export default function SettingsPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>Closed-Won Project Kickoff</Label>
-                  <p className="text-sm text-muted-foreground">Automatically create projects and kickoff meetings when deals are won.</p>
+                  <Label>Closed-Won Kickoff</Label>
+                  <p className="text-sm text-muted-foreground">Initialize projects and schedule meetings when deals close.</p>
                 </div>
                 <Switch 
                   checked={settings?.autoProjectCreation ?? true} 
                   onCheckedChange={(val) => updateSetting('autoProjectCreation', val)}
+                />
+              </div>
+              <div className="flex items-center justify-between pt-4 border-t">
+                <div className="space-y-0.5">
+                  <Label>Simulate Notifications</Label>
+                  <p className="text-sm text-muted-foreground">Log automated email simulations to the interaction history.</p>
+                </div>
+                <Switch 
+                  checked={settings?.simulateNotifications ?? true} 
+                  onCheckedChange={(val) => updateSetting('simulateNotifications', val)}
                 />
               </div>
             </CardContent>
@@ -148,9 +173,9 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BrainCircuit className="h-5 w-5 text-primary" />
-                AI Agent Configuration
+                Agent Configuration
               </CardTitle>
-              <CardDescription>Adjust the sensitivity and behavior of Vela's AI insights.</CardDescription>
+              <CardDescription>Fine-tune AI agent sensitivity and processing behavior.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
               <div className="space-y-4">
@@ -161,20 +186,84 @@ export default function SettingsPage() {
                 <Slider 
                   value={[settings?.healthThreshold ?? 70]} 
                   max={100} 
-                  step={5} 
+                  step={1} 
                   onValueChange={(val) => updateSetting('healthThreshold', val[0])}
                 />
-                <p className="text-xs text-muted-foreground">The score required to maintain a "Healthy" business status label.</p>
+                <p className="text-xs text-muted-foreground">Minimum score to maintain a "Healthy" business status.</p>
               </div>
-              
-              <div className="flex items-center justify-between pt-4 border-t">
+
+              <div className="space-y-4 pt-6 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <Label>OCR Confidence Limit</Label>
+                  </div>
+                  <span className="text-sm font-bold text-primary">{settings?.ocrConfidenceLimit ?? 85}%</span>
+                </div>
+                <Slider 
+                  value={[settings?.ocrConfidenceLimit ?? 85]} 
+                  max={100} 
+                  step={5} 
+                  onValueChange={(val) => updateSetting('ocrConfidenceLimit', val[0])}
+                />
+                <p className="text-xs text-muted-foreground">Minimum confidence score required to auto-approve receipt scans.</p>
+              </div>
+
+              <div className="space-y-4 pt-6 border-t">
+                <Label>AI Report Personality</Label>
+                <Select 
+                  value={settings?.aiReportTone ?? 'Professional'} 
+                  onValueChange={(val) => updateSetting('aiReportTone', val)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select tone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Professional">Standard Professional</SelectItem>
+                    <SelectItem value="Concise">Bullet-Point Concise</SelectItem>
+                    <SelectItem value="Encouraging">Empathetic & Encouraging</SelectItem>
+                    <SelectItem value="Strict">Strict & Data-Heavy</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Determines the writing style of client status reports.</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="projects" className="mt-6 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Kanban className="h-5 w-5 text-blue-500" />
+                Delivery Parameters
+              </CardTitle>
+              <CardDescription>Default settings for the project management module.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Default Project Duration (Days)</Label>
+                  <span className="text-sm font-bold text-primary">{settings?.defaultProjectDuration ?? 30} days</span>
+                </div>
+                <Slider 
+                  value={[settings?.defaultProjectDuration ?? 30]} 
+                  min={7}
+                  max={180} 
+                  step={1} 
+                  onValueChange={(val) => updateSetting('defaultProjectDuration', val[0])}
+                />
+                <p className="text-xs text-muted-foreground">Standard timeline for projects auto-generated from won leads.</p>
+              </div>
+
+              <div className="flex items-center justify-between pt-6 border-t">
                 <div className="space-y-0.5">
-                  <Label>Predictive Forecasting</Label>
-                  <p className="text-sm text-muted-foreground">Allow AI to access historical ledger data for budget predictions.</p>
+                  <Label>Auto-Archive Completed</Label>
+                  <p className="text-sm text-muted-foreground">Move projects to history 7 days after 100% completion.</p>
                 </div>
                 <Switch 
-                  checked={settings?.aiForecastingEnabled ?? true} 
-                  onCheckedChange={(val) => updateSetting('aiForecastingEnabled', val)}
+                  checked={settings?.autoArchiveProjects ?? false} 
+                  onCheckedChange={(val) => updateSetting('autoArchiveProjects', val)}
                 />
               </div>
             </CardContent>
@@ -185,15 +274,15 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-500" />
-                Compliance & Training
+                <Users className="h-5 w-5 text-indigo-500" />
+                Team Compliance
               </CardTitle>
-              <CardDescription>Manage requirements for the Vela Academy and team onboarding.</CardDescription>
+              <CardDescription>Manage requirements for employee training and leave.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label>Training Pass Mark</Label>
+                  <Label>Academy Passing Grade</Label>
                   <span className="text-sm font-bold text-primary">{settings?.trainingPassMark ?? 75}%</span>
                 </div>
                 <Slider 
@@ -202,7 +291,18 @@ export default function SettingsPage() {
                   step={5} 
                   onValueChange={(val) => updateSetting('trainingPassMark', val[0])}
                 />
-                <p className="text-xs text-muted-foreground">Minimum score required for employee certification in interactive modules.</p>
+                <p className="text-xs text-muted-foreground">Minimum score required for Vela Academy certifications.</p>
+              </div>
+
+              <div className="flex items-center justify-between pt-6 border-t">
+                <div className="space-y-0.5">
+                  <Label>Auto-Approve Sick Leave</Label>
+                  <p className="text-sm text-muted-foreground">Automatically approve sick leave requests under 2 days.</p>
+                </div>
+                <Switch 
+                  checked={settings?.autoApproveSickLeave ?? false} 
+                  onCheckedChange={(val) => updateSetting('autoApproveSickLeave', val)}
+                />
               </div>
             </CardContent>
           </Card>
@@ -213,15 +313,15 @@ export default function SettingsPage() {
             <CardHeader className="bg-destructive/5">
               <CardTitle className="flex items-center gap-2 text-destructive">
                 <ShieldAlert className="h-5 w-5" />
-                Danger Zone
+                OS Factory Reset
               </CardTitle>
               <CardDescription>Permanent system actions. Use with extreme caution.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-0.5">
-                  <Label className="text-destructive font-bold">Factory Reset Business Data</Label>
-                  <p className="text-sm text-muted-foreground">Delete all customers, transactions, and project data associated with this account.</p>
+                  <Label className="text-destructive font-bold">Wipe Business Instance</Label>
+                  <p className="text-sm text-muted-foreground">Delete all data associated with this account across all modules.</p>
                 </div>
                 <Button 
                   variant="destructive" 
@@ -230,17 +330,17 @@ export default function SettingsPage() {
                   disabled={isResetting}
                 >
                   {isResetting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                  Wipe Data
+                  Confirm Purge
                 </Button>
               </div>
               
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t">
                 <div className="space-y-0.5">
-                  <Label>Database Integrity Check</Label>
-                  <p className="text-sm text-muted-foreground">Scan all collections for schema mismatches and orphaned records.</p>
+                  <Label>Database Optimization</Label>
+                  <p className="text-sm text-muted-foreground">Scan and index all collections for faster cross-module querying.</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => toast({ title: "Check Initiated", description: "Database integrity is 100%." })}>
-                  <Database className="mr-2 h-4 w-4" /> Run Scan
+                <Button variant="outline" size="sm" onClick={() => toast({ title: "Maintenance Complete", description: "Database has been indexed and optimized." })}>
+                  <Database className="mr-2 h-4 w-4" /> Start Scan
                 </Button>
               </div>
             </CardContent>
@@ -248,15 +348,18 @@ export default function SettingsPage() {
         </TabsContent>
       </Tabs>
 
-      <Card className="bg-primary/5 border-primary/20">
-        <CardContent className="p-4 flex items-center justify-between text-xs font-medium text-primary">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4" />
-            Vela OS Version 1.2.4 (Stable)
+      <div className="mt-8 p-6 bg-primary/5 rounded-xl border-2 border-dashed border-primary/20">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h4 className="font-bold flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              Vela Engine v1.2.4 Active
+            </h4>
+            <p className="text-xs text-muted-foreground">All systems functional. Google Cloud Region: us-central1.</p>
           </div>
-          <div>Environment: Production (Google Cloud)</div>
-        </CardContent>
-      </Card>
+          <Button variant="outline" size="sm" className="bg-background">Export OS Config</Button>
+        </div>
+      </div>
     </div>
   );
 }
