@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -12,6 +13,7 @@ import { PlusCircle, Loader2, Sparkles } from 'lucide-react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useToast } from '@/hooks/use-toast';
+import { logActivity } from '@/lib/activity';
 
 export default function TransactionsPage() {
   const db = useFirestore();
@@ -45,6 +47,13 @@ export default function TransactionsPage() {
         toast({
           title: "Transaction Logged",
           description: `Saved ${newTransaction.description} of $${newTransaction.amount.toFixed(2)}`,
+        });
+
+        // Log Activity
+        logActivity(db, user.uid, {
+            module: 'Finance',
+            action: `Logged ${newTransaction.type}: ${newTransaction.description} ($${newTransaction.amount.toFixed(2)})`,
+            severity: newTransaction.type === 'income' ? 'success' : 'info'
         });
       })
       .catch(async () => {

@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useMemo } from 'react';
@@ -32,6 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { triggerCustomerOnboarding } from '@/lib/automation';
+import { logActivity } from '@/lib/activity';
 
 export default function CustomersPage() {
   const db = useFirestore();
@@ -85,6 +87,13 @@ export default function CustomersPage() {
           description: "Onboarding automation has been initiated." 
         });
         
+        // Log System Activity
+        logActivity(db, user.uid, {
+            module: 'CRM',
+            action: `Added new customer: ${newCustomer.name} (${newCustomer.company})`,
+            severity: 'success'
+        });
+
         // Trigger OS Automation
         triggerCustomerOnboarding(db, user.uid, {
           name: newCustomer.name,

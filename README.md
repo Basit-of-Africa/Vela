@@ -1,3 +1,4 @@
+
 # Vela OS: The Modern Business Operating System
 
 Vela is a high-performance, AI-integrated Business Operating System (OS) designed to unify all aspects of a modern startup or enterprise. Built with Next.js, Firebase, and Google Genkit, Vela provides a single source of truth for Sales, Operations, Finance, and Human Resources.
