@@ -44,11 +44,22 @@ import {
   BarChart3,
   Globe,
   Building2,
-  Puzzle
+  Puzzle,
+  ChevronDown,
+  UserPlus,
+  Plus,
+  Search
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -214,11 +225,44 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
           <div className="flex items-center gap-4">
             <SidebarTrigger className="md:hidden" />
+            <div className="hidden md:flex items-center relative w-64">
+               <Search className="absolute left-2 h-4 w-4 text-muted-foreground" />
+               <Input className="pl-8 h-8 bg-muted/50 border-none text-xs" placeholder="Search OS..." />
+            </div>
             <Badge variant="outline" className="hidden sm:flex border-primary/20 bg-primary/5 text-primary text-[10px] font-bold uppercase tracking-widest px-2 py-0">
               {role} Clearance
             </Badge>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" className="h-8 font-bold text-[10px] uppercase tracking-wider">
+                  Quick Create <ChevronDown className="ml-1 h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                   <Link href="/crm/pipeline" className="flex items-center gap-2 cursor-pointer">
+                      <TrendingUp className="h-4 w-4 text-primary" /> Add Sales Deal
+                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                   <Link href="/crm/customers" className="flex items-center gap-2 cursor-pointer">
+                      <UserPlus className="h-4 w-4 text-blue-500" /> New Customer
+                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                   <Link href="/transactions" className="flex items-center gap-2 cursor-pointer">
+                      <ArrowLeftRight className="h-4 w-4 text-green-500" /> Log Transaction
+                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                   <Link href="/hr/employees" className="flex items-center gap-2 cursor-pointer">
+                      <Users className="h-4 w-4 text-indigo-500" /> Provision Team
+                   </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <ModeToggle />
           </div>
         </header>

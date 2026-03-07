@@ -1,9 +1,10 @@
+
 "use client"
 
 import { useMemo, useState } from 'react';
 import { useCollection, useFirestore, useUser } from '@/firebase';
 import { collection, query, where, doc, updateDoc } from 'firebase/firestore';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -17,7 +18,8 @@ import {
   FileText,
   Sparkles,
   CheckCircle2,
-  Calendar
+  Calendar,
+  Flag
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -39,6 +41,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { getClientStatusReport } from '@/lib/actions';
 import type { Project } from '@/lib/types';
 import type { ClientStatusReportOutput } from '@/ai/flows/client-status-report-flow';
+import { logActivity } from '@/lib/activity'; // Assuming we moved logActivity to a reusable lib
 
 export default function ProjectsPage() {
   const db = useFirestore();
@@ -58,17 +61,49 @@ export default function ProjectsPage() {
 
   const statuses: Project['status'][] = ['Active', 'On Hold', 'Completed'];
 
-  const handleUpdateStatus = (projectId: string, newStatus: Project['status']) => {
-    if (!db) return;
+  const handleUpdateStatus = (projectId: string, newStatus: Project['status'], title: string) => {
+    if (!db || !user) return;
     const docRef = doc(db, 'projects', projectId);
     updateDoc(docRef, { status: newStatus })
-      .then(() => toast({ title: "Project Updated", description: `Status changed to ${newStatus}` }))
+      .then(() => {
+        toast({ title: "Project Updated", description: `Status changed to ${newStatus}` });
+        // Activity Log moved inline for simplicity here
+        const actData = {
+          userId: user.uid,
+          module: 'Operations' as const,
+          action: `Project "${title}" moved to ${newStatus}.`,
+          timestamp: new Date().toISOString(),
+          severity: 'info' as const
+        };
+        addDoc(collection(db, 'activities'), actData);
+      })
       .catch(async () => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: docRef.path,
           operation: 'update',
           requestResourceData: { status: newStatus }
         }));
+      });
+  };
+
+  const handleUpdateMilestone = (projectId: string, currentMilestone: string, projectTitle: string) => {
+    if (!db || !user) return;
+    const milestones = ['Research', 'Design', 'Development', 'QA', 'Deployment', 'Handover'];
+    const currentIndex = milestones.indexOf(currentMilestone || 'Research');
+    const nextMilestone = milestones[Math.min(milestones.length - 1, currentIndex + 1)];
+    
+    const docRef = doc(db, 'projects', projectId);
+    updateDoc(docRef, { currentMilestone: nextMilestone })
+      .then(() => {
+        toast({ title: "Milestone Reached", description: `Now at: ${nextMilestone}` });
+        const actData = {
+          userId: user.uid,
+          module: 'Operations' as const,
+          action: `Project "${projectTitle}" reached milestone: ${nextMilestone}.`,
+          timestamp: new Date().toISOString(),
+          severity: 'success' as const
+        };
+        addDoc(collection(db, 'activities'), actData);
       });
   };
 
@@ -157,11 +192,15 @@ export default function ProjectsPage() {
                       <Card key={project.id} className="group relative overflow-hidden hover:shadow-md transition-all">
                         <CardHeader className="pb-3">
                           <div className="flex justify-between items-start">
-                            <div>
+                            <div className="space-y-1">
                               <CardTitle className="text-base font-bold group-hover:text-primary transition-colors">{project.title}</CardTitle>
-                              <CardDescription className="flex items-center gap-1 mt-1">
+                              <CardDescription className="flex items-center gap-1">
                                 <Target className="h-3 w-3" /> {project.customerName}
                               </CardDescription>
+                              <Badge variant="secondary" className="text-[9px] font-bold h-4">
+                                <Flag className="h-2 w-2 mr-1" />
+                                {project.currentMilestone || 'Research'}
+                              </Badge>
                             </div>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -171,10 +210,13 @@ export default function ProjectsPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 {statuses.filter(s => s !== status).map(s => (
-                                  <DropdownMenuItem key={s} onClick={() => handleUpdateStatus(project.id, s)}>
+                                  <DropdownMenuItem key={s} onClick={() => handleUpdateStatus(project.id, s, project.title)}>
                                     Move to {s}
                                   </DropdownMenuItem>
                                 ))}
+                                <DropdownMenuItem onClick={() => handleUpdateMilestone(project.id, project.currentMilestone || 'Research', project.title)}>
+                                  <Flag className="mr-2 h-3 w-3" /> Next Milestone
+                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleGenerateReport(project)} className="text-primary font-medium">
                                   <Sparkles className="mr-2 h-3 w-3" /> Generate AI Report
                                 </DropdownMenuItem>
@@ -206,22 +248,22 @@ export default function ProjectsPage() {
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            className="text-xs" 
-                            onClick={() => handleUpdateProgress(project.id, project.progress)}
-                            disabled={project.progress >= 100 || status === 'Completed'}
+                            className="text-[10px] font-bold" 
+                            onClick={() => handleUpdateMilestone(project.id, project.currentMilestone || 'Research', project.title)}
+                            disabled={status === 'Completed'}
                           >
-                            <Zap className="mr-1.5 h-3 w-3 text-primary fill-primary" />
-                            Log Progress
+                            <Flag className="mr-1.5 h-3 w-3 text-primary fill-primary" />
+                            Next Phase
                           </Button>
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="text-xs text-primary hover:text-primary hover:bg-primary/5" 
+                            className="text-[10px] font-bold text-primary hover:text-primary hover:bg-primary/5" 
                             onClick={() => handleGenerateReport(project)}
                             disabled={isGeneratingReport}
                           >
                             {isGeneratingReport ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="mr-1.5 h-3 w-3" />}
-                            AI Report
+                            AI Update
                           </Button>
                         </CardFooter>
                       </Card>
@@ -240,7 +282,7 @@ export default function ProjectsPage() {
           <DialogHeader>
             <div className="flex items-center gap-2 text-primary font-bold mb-1">
               <Sparkles className="h-5 w-5" />
-              <span>AI Agent Output</span>
+              <span>Vela AI Insights</span>
             </div>
             <DialogTitle className="text-2xl">{activeReport?.reportTitle}</DialogTitle>
             <DialogDescription>
@@ -260,7 +302,7 @@ export default function ProjectsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-3">
                   <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <CheckCircle2 className="h-3 w-3 text-green-500" /> Key Achievements
+                    <CheckCircle2 className="h-3 w-3 text-green-500" /> Milestones Hit
                   </h4>
                   <ul className="space-y-2">
                     {activeReport.achievements.map((item, i) => (
@@ -273,7 +315,7 @@ export default function ProjectsPage() {
                 </div>
                 <div className="space-y-3">
                   <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Calendar className="h-3 w-3 text-blue-500" /> Next Steps
+                    <Calendar className="h-3 w-3 text-blue-500" /> Critical Path
                   </h4>
                   <ul className="space-y-2">
                     {activeReport.nextSteps.map((item, i) => (
@@ -288,23 +330,23 @@ export default function ProjectsPage() {
 
               <div className="pt-4 border-t flex items-center justify-between">
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Financial Note</h4>
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Financial Health</h4>
                   <p className="text-sm font-medium">{activeReport.financialHealth}</p>
                 </div>
                 <Badge variant={activeReport.overallSentiment === 'Positive' ? 'default' : 'outline'}>
-                  {activeReport.overallSentiment} Sentiment
+                  {activeReport.overallSentiment} Tone
                 </Badge>
               </div>
             </div>
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsReportOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setIsReportOpen(false)}>Dismiss</Button>
             <Button onClick={() => {
               toast({ title: "Copied", description: "Report content copied to clipboard." });
               setIsReportOpen(false);
             }}>
-              Copy to Email
+              Sync to Email
             </Button>
           </DialogFooter>
         </DialogContent>

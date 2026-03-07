@@ -61,9 +61,23 @@
         "status": { "type": "string", "enum": ["Active", "On Hold", "Completed"] },
         "progress": { "type": "number" },
         "budget": { "type": "number" },
-        "dueDate": { "type": "string", "format": "date" }
+        "dueDate": { "type": "string", "format": "date" },
+        "currentMilestone": { "type": "string" }
       },
       "required": ["userId", "title", "status", "customerName"]
+    },
+    "Activity": {
+      "title": "Activity",
+      "description": "System-wide audit log of business operations.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "module": { "type": "string", "enum": ["CRM", "HR", "Finance", "Operations", "System"] },
+        "action": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "severity": { "type": "string", "enum": ["info", "success", "warning"] }
+      },
+      "required": ["userId", "module", "action", "timestamp"]
     },
     "Interaction": {
       "title": "Interaction",
@@ -116,6 +130,7 @@
     "/customers/{customerId}": { "schema": "Customer", "description": "Business customers." },
     "/leads/{leadId}": { "schema": "Lead", "description": "Sales deals." },
     "/projects/{projectId}": { "schema": "Project", "description": "Active delivery projects." },
+    "/activities/{activityId}": { "schema": "Activity", "description": "Unified system audit logs." },
     "/integrations/{integrationId}": { "schema": "Integration", "description": "Tenant tool integrations." }
   }
 }

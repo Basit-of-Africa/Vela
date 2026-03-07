@@ -6,10 +6,38 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
+ * Utility to log global system activities.
+ */
+export async function logActivity(db: Firestore, userId: string, data: {
+  module: 'CRM' | 'HR' | 'Finance' | 'Operations' | 'System',
+  action: string,
+  severity?: 'info' | 'success' | 'warning'
+}) {
+  const activityData = {
+    userId,
+    module: data.module,
+    action: data.action,
+    severity: data.severity || 'info',
+    timestamp: new Date().toISOString(),
+  };
+
+  addDoc(collection(db, 'activities'), activityData).catch(async () => {
+    // Silent fail for logs to avoid interrupting UI
+  });
+}
+
+/**
  * Automates cross-module actions when a new customer is created.
  */
 export async function triggerCustomerOnboarding(db: Firestore, userId: string, customer: { name: string; company?: string }) {
-  // 1. Automatically schedule a Welcome Call for tomorrow
+  // 1. Log Activity
+  logActivity(db, userId, {
+    module: 'CRM',
+    action: `New customer "${customer.name}" added to directory.`,
+    severity: 'success'
+  });
+
+  // 2. Automatically schedule a Welcome Call for tomorrow
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(10, 0, 0, 0);
@@ -30,7 +58,7 @@ export async function triggerCustomerOnboarding(db: Firestore, userId: string, c
     }));
   });
 
-  // 2. Log an automated interaction note
+  // 3. Log an automated interaction note
   const interactionData = {
     userId,
     customerName: customer.name,
@@ -53,7 +81,14 @@ export async function triggerCustomerOnboarding(db: Firestore, userId: string, c
  * BRIDGING CRM -> PROJECTS -> CALENDAR
  */
 export async function triggerDealWonAutomation(db: Firestore, userId: string, lead: { title: string; customerName: string; value: number }) {
-  // 1. Create a Project Record automatically
+  // 1. Log Activity
+  logActivity(db, userId, {
+    module: 'CRM',
+    action: `Deal WON: "${lead.title}" for ${lead.customerName}.`,
+    severity: 'success'
+  });
+
+  // 2. Create a Project Record automatically
   const projectData = {
     userId,
     customerName: lead.customerName,
@@ -72,7 +107,7 @@ export async function triggerDealWonAutomation(db: Firestore, userId: string, le
     }));
   });
 
-  // 2. Create a Project Kickoff Meeting
+  // 3. Create a Project Kickoff Meeting
   const nextWeek = new Date();
   nextWeek.setDate(nextWeek.getDate() + 7);
 
@@ -89,23 +124,6 @@ export async function triggerDealWonAutomation(db: Firestore, userId: string, le
       path: 'appointments',
       operation: 'create',
       requestResourceData: kickoffData,
-    }));
-  });
-
-  // 3. Log a "Victory" interaction
-  const interactionData = {
-    userId,
-    customerName: lead.customerName,
-    type: 'Meeting',
-    content: `Victory! Deal "${lead.title}" won. System automatically initialized the Project and scheduled the kickoff for ${nextWeek.toLocaleDateString()}.`,
-    date: new Date().toISOString(),
-  };
-
-  addDoc(collection(db, 'interactions'), interactionData).catch(async () => {
-    errorEmitter.emit('permission-error', new FirestorePermissionError({
-      path: 'interactions',
-      operation: 'create',
-      requestResourceData: interactionData,
     }));
   });
 }

@@ -51,6 +51,16 @@ export type Project = {
   progress: number;
   budget: number;
   dueDate: string;
+  currentMilestone?: string;
+};
+
+export type Activity = {
+  id: string;
+  userId: string;
+  module: 'CRM' | 'HR' | 'Finance' | 'Operations' | 'System';
+  action: string;
+  timestamp: string;
+  severity: 'info' | 'success' | 'warning';
 };
 
 export type InductionTask = {
